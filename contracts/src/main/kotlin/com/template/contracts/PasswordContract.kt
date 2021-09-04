@@ -1,10 +1,7 @@
 package com.template.contracts
 
-import com.template.states.CashMovementState
-import net.corda.core.contracts.CommandData
-import net.corda.core.contracts.Contract
-import net.corda.core.contracts.TypeOnlyCommandData
-import net.corda.core.contracts.requireThat
+import com.template.states.PasswordState
+import net.corda.core.contracts.*
 import net.corda.core.transactions.LedgerTransaction
 
 /**
@@ -19,10 +16,9 @@ class PasswordContract : Contract {
     }
 
     interface Commands : CommandData {
-        class Create : TypeOnlyCommandData(), Commands
+        class CreateCmd : TypeOnlyCommandData(), Commands
 
-        class CashTransferRequestCmd : TypeOnlyCommandData(), Commands
-        class CashTransferCompleteCmd : TypeOnlyCommandData(), Commands
+        class ConsumeCmd(val verifyPassword: String) : TypeOnlyCommandData(), Commands
 
     }
 
@@ -30,10 +26,28 @@ class PasswordContract : Contract {
     // Our contract does not check that the Nth prime is correct. Instead, it checks that the
     // information in the command and state match.
     override fun verify(tx: LedgerTransaction) = requireThat {
-        "There are no inputs" using (tx.inputs.isEmpty())
-        val output = tx.outputsOfType<CashMovementState>().single()
-//        val command = tx.commands.requireSingleCommand<Create>().value
-//        "The prime in the output does not match the prime in the command." using
-//                (command.n == output.n && command.nthPrime == output.nthPrime)
+
+        tx.commands.forEach {
+
+                if(it.value is Commands.ConsumeCmd){
+
+                    val consumeCommand = tx.commands.requireSingleCommand<Commands.ConsumeCmd>().value
+                    val passwordState = tx.inputsOfType<PasswordState>().single()
+
+                    requireThat {
+                        "${passwordState.password} must equals to to " using (passwordState.password == consumeCommand.verifyPassword)
+
+                    val timeWindow = tx.timeWindow
+                    if (timeWindow == null || timeWindow.untilTime == null) {
+                        throw IllegalArgumentException("Cake transaction must have a timestamp with an until-time.")
+                    }
+                    if (timeWindow.untilTime!!.isAfter(passwordState.expiry)) {
+                        throw IllegalArgumentException("Expiry has passed! Expiry date & time was: " + passwordState.expiry)
+                    }
+                }
+
+          }
+        }
+
     }
 }

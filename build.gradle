@@ -100,16 +100,16 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
      * the notion of cordapps. In production, Notary does not need cordapps as well. This is just a short cut to load
      * the Corda network bootstrapper.
      */
-    nodeDefaults {
-        projectCordapp {
-            deploy = false
-        }
-        cordapp project(':contracts')
-        cordapp project(':workflows')
-        runSchemaMigration = true //This configuration is for any CorDapps with custom schema, We will leave this as true to avoid
-        //problems for developers who are not familiar with Corda. If you are not using custom schemas, you can change
-        //it to false for quicker project compiling time.
-    }
+//    nodeDefaults {
+//        projectCordapp {
+//            deploy = false
+//        }
+//        cordapp project(':contracts')
+//        cordapp project(':workflows')
+//        runSchemaMigration = true //This configuration is for any CorDapps with custom schema, We will leave this as true to avoid
+//        //problems for developers who are not familiar with Corda. If you are not using custom schemas, you can change
+//        //it to false for quicker project compiling time.
+//    }
     node {
         name "O=Notary,L=London,C=GB"
         notary = [validating : false]

@@ -12,7 +12,7 @@ import java.time.Instant
  * @date 3/9/21 上午11:45
  * @email 924943578@qq.com
  */
-class PasswordState (
+data class PasswordState (
 
     val payer: Party,
 
@@ -21,6 +21,8 @@ class PasswordState (
     val passwordHash: String,
 
     val requestId: String,
+
+    val expiry: Instant,
 
     val entryDate: Instant? = Instant.now()
     ) :  QueryableState {

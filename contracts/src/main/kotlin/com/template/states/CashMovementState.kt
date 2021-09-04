@@ -19,7 +19,7 @@ import java.util.*
  * @email 924943578@qq.com
  */
 @BelongsToContract(CashMovementContract::class)
-class CashMovementState (
+data class CashMovementState (
 
     val payer: Party,
     val payee: Party,

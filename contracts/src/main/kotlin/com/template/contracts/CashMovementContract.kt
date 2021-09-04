@@ -1,6 +1,7 @@
 package com.template.contracts
 
 import com.template.states.CashMovementState
+import com.template.states.CashMovementStatus
 import net.corda.core.contracts.CommandData
 import net.corda.core.contracts.Contract
 import net.corda.core.contracts.TypeOnlyCommandData
@@ -22,21 +23,29 @@ class CashMovementContract : Contract {
         class CashTransferPendingCmd : TypeOnlyCommandData(), Commands
 
         class CashTransferRequestCmd : TypeOnlyCommandData(), Commands
-        class CashTransferCompleteCmd : TypeOnlyCommandData(), Commands
 
     }
 
 
-    // Commands signed by oracles must contain the facts the oracle is attesting to.
-    class Create(val n: Int, val nthPrime: Int) : CommandData
-
-    // Our contract does not check that the Nth prime is correct. Instead, it checks that the
-    // information in the command and state match.
     override fun verify(tx: LedgerTransaction) = requireThat {
-        "There are no inputs" using (tx.inputs.isEmpty())
-        val output = tx.outputsOfType<CashMovementState>().single()
-//        val command = tx.commands.requireSingleCommand<Create>().value
-//        "The prime in the output does not match the prime in the command." using
-//                (command.n == output.n && command.nthPrime == output.nthPrime)
+        tx.commands.forEach {
+
+            if (it.value is Commands.CashTransferPendingCmd) {
+
+                val cashMovementState = tx.outputsOfType<CashMovementState>().single()
+
+                requireThat {
+                    "${cashMovementState.status} must equals to to " using (cashMovementState.status == CashMovementStatus.TRANSFER_PENDING)
+
+                }
+
+            }else if (it.value is Commands.CashTransferRequestCmd){
+                val commands = tx.commands;
+                requireThat {
+                    "${commands.size} must equals to to 2" using (commands.size == 2)
+
+                }
+            }
+        }
     }
 }

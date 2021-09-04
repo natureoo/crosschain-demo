@@ -1,15 +1,15 @@
 apply plugin: 'net.corda.plugins.cordapp'
 
-cordapp {
-    targetPlatformVersion corda_platform_version
-    minimumPlatformVersion corda_platform_version
-    contract {
-        name "Template Contracts"
-        vendor "Corda Open Source"
-        licence "Apache License, Version 2.0"
-        versionId 1
-    }
-}
+//cordapp {
+//    targetPlatformVersion corda_platform_version
+//    minimumPlatformVersion corda_platform_version
+//    contract {
+//        name "Template Contracts"
+//        vendor "Corda Open Source"
+//        licence "Apache License, Version 2.0"
+//        versionId 1
+//    }
+//}
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
