@@ -3,9 +3,9 @@ package com.template.flows
 import co.paralleluniverse.fibers.Suspendable
 import com.template.contracts.CashMovementContract
 import com.template.contracts.PasswordContract
+import com.template.metadata.CashMovementStatus
 import com.template.metadata.PasswordHashMessage
 import com.template.states.CashMovementState
-import com.template.states.CashMovementStatus
 import com.template.states.PasswordState
 import com.template.utils.setStep
 import net.corda.core.contracts.Command
@@ -21,7 +21,6 @@ import net.corda.core.utilities.ProgressTracker
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.security.MessageDigest
-import java.time.Duration
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -108,7 +107,7 @@ class TransferPendingFlow {
                 addOutputState(passwordState, PasswordContract.PASSWORD_CONTRACT_ID)
                 addCommand(cashTransferPendingCmd)
                 addCommand(passwordCreateCmd)
-                setTimeWindow(Instant.now(), Duration.ofHours(expiryAfterHours));
+
             }
 
             // Stage 2 - Verifying Transaction

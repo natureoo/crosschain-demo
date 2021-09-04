@@ -1,4 +1,4 @@
-package com.template.states
+package com.template.metadata
 
 import net.corda.core.serialization.CordaSerializable
 
@@ -8,8 +8,7 @@ import net.corda.core.serialization.CordaSerializable
  * @email 924943578@qq.com
  */
 @CordaSerializable
-enum class CashMovementStatus {
-    TRANSFER_PENDING,
-    TRANSFER_REQUEST,
-    TRANSFER_COMPLETED
+enum class PasswordStatus {
+    ACTIVE,
+    INACTIVE
 }

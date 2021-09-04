@@ -1,6 +1,6 @@
 package com.template.schema
 
-import com.template.states.CashMovementStatus
+import com.template.metadata.CashMovementStatus
 import net.corda.core.schemas.MappedSchema
 import net.corda.core.schemas.PersistentState
 import java.math.BigDecimal

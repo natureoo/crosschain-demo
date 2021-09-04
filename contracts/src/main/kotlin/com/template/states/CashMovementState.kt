@@ -1,6 +1,7 @@
 package com.template.states
 
 import com.template.contracts.CashMovementContract
+import com.template.metadata.CashMovementStatus
 import net.corda.core.contracts.BelongsToContract
 import net.corda.core.contracts.LinearState
 import net.corda.core.contracts.UniqueIdentifier
@@ -21,16 +22,16 @@ import java.util.*
 @BelongsToContract(CashMovementContract::class)
 data class CashMovementState (
 
-    val payer: Party,
-    val payee: Party,
+        val payer: Party,
+        val payee: Party,
 
-    val instructedMVUnit: BigDecimal,
-    val instructedMVCurrency: Currency,
+        val instructedMVUnit: BigDecimal,
+        val instructedMVCurrency: Currency,
 
-    val requestId: String,
-    val entryDate: Instant? = Instant.now(),
-    val status: CashMovementStatus,
-    override val linearId: UniqueIdentifier = UniqueIdentifier()
+        val requestId: String,
+        val entryDate: Instant? = Instant.now(),
+        val status: CashMovementStatus,
+        override val linearId: UniqueIdentifier = UniqueIdentifier()
     ) : LinearState, QueryableState {
 
         override val participants: List<AbstractParty>

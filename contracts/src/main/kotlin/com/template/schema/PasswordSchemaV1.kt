@@ -1,6 +1,6 @@
 package com.template.schema
 
-import com.template.states.CashMovementStatus
+import com.template.metadata.PasswordStatus
 import net.corda.core.schemas.MappedSchema
 import net.corda.core.schemas.PersistentState
 import java.time.Instant
@@ -46,7 +46,7 @@ object PasswordSchemaV1 : MappedSchema(
             @Column(name = "entry_date")
             var entryDate: Instant?,
             @Column(name = "status")
-            var status: CashMovementStatus?,
+            var status: PasswordStatus,
             @Column(name = "linear_id")
             var linearId: UUID
     ) : PersistentState()

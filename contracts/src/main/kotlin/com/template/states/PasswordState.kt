@@ -1,5 +1,6 @@
 package com.template.states
 
+import com.template.metadata.PasswordStatus
 import net.corda.core.identity.AbstractParty
 import net.corda.core.identity.Party
 import net.corda.core.schemas.MappedSchema
@@ -14,17 +15,19 @@ import java.time.Instant
  */
 data class PasswordState (
 
-    val payer: Party,
+        val payer: Party,
 
-    val password: String,
+        val password: String,
 
-    val passwordHash: String,
+        val passwordHash: String,
 
-    val requestId: String,
+        val requestId: String,
 
-    val expiry: Instant,
+        val expiry: Instant,
 
-    val entryDate: Instant? = Instant.now()
+        val status: PasswordStatus = PasswordStatus.ACTIVE,
+
+        val entryDate: Instant? = Instant.now()
     ) :  QueryableState {
 
     override val participants: List<AbstractParty>

@@ -3,11 +3,12 @@ package com.template.flows
 import co.paralleluniverse.fibers.Suspendable
 import com.template.contracts.CashMovementContract
 import com.template.contracts.PasswordContract
+import com.template.metadata.CashMovementStatus
 import com.template.metadata.PasswordMessage
+import com.template.metadata.PasswordStatus
 import com.template.schema.CashMovementSchemaV1
 import com.template.schema.PasswordSchemaV1
 import com.template.states.CashMovementState
-import com.template.states.CashMovementStatus
 import com.template.states.PasswordState
 import com.template.utils.setStep
 import net.corda.core.contracts.Command
@@ -22,6 +23,8 @@ import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
+import java.time.Duration
+import java.time.Instant
 
 /**
  * @author nature
@@ -72,7 +75,11 @@ class TransferRequestFlow {
                     PasswordSchemaV1.PersistentPassword::requestId.equal(passwordMessage.requestId)
             )
 
-            val passwordState = serviceHub.vaultService.queryBy<PasswordState>(passwordRequestIdCriteria).states.single()
+            val passwordStatusCriteria = QueryCriteria.VaultCustomQueryCriteria(
+                    PasswordSchemaV1.PersistentPassword::status.equal(PasswordStatus.ACTIVE)
+            )
+
+            val passwordStateAndRef = serviceHub.vaultService.queryBy<PasswordState>(passwordRequestIdCriteria.and(passwordStatusCriteria)).states.single()
 
             val cashMovementRequestIdCriteria = QueryCriteria.VaultCustomQueryCriteria(
                     CashMovementSchemaV1.PersistentCashMovement::requestId.equal(passwordMessage.requestId)
@@ -85,6 +92,10 @@ class TransferRequestFlow {
                     status = CashMovementStatus.TRANSFER_REQUEST
             )
 
+            val passwordState = passwordStateAndRef.state.data.copy(
+                    status = PasswordStatus.INACTIVE
+            )
+
             val cashTransferRequestCmd = Command(CashMovementContract.Commands.CashTransferRequestCmd(),
                     cashMovementRequestState.payer.owningKey)
             val passwordConsumedCmd = Command(PasswordContract.Commands.ConsumeCmd(passwordMessage.password),
@@ -92,11 +103,13 @@ class TransferRequestFlow {
 
             val txBuilder = TransactionBuilder(notary).apply {
                 addInputState(cashMovementPendingStateAndRef)
-                addInputState(passwordState)
+                addInputState(passwordStateAndRef)
 
                 addOutputState(cashMovementRequestState, CashMovementContract.CASH_MOVEMENT_CONTRACT_ID, notary, 1) // Encumbrance is at index 1
+                addOutputState(passwordState) // Encumbrance is at index 1
                 addCommand(cashTransferRequestCmd)
                 addCommand(passwordConsumedCmd)
+                setTimeWindow(Instant.now(), Duration.ofSeconds(10));
             }
 
             // Stage 2 - Verifying Transaction

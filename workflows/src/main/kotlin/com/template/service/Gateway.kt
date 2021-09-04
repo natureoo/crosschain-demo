@@ -5,15 +5,17 @@ package com.template.service
  * @date 4/9/21 上午10:57
  * @email 924943578@qq.com
  */
+import com.template.flows.TransferRequestFlow
 import com.template.metadata.PasswordHashMessage
-import net.corda.core.node.ServiceHub
+import com.template.metadata.PasswordMessage
+import net.corda.core.node.AppServiceHub
 import net.corda.core.node.services.CordaService
 import net.corda.core.serialization.SingletonSerializeAsToken
 
 
 
 @CordaService
-class Gateway(val services: ServiceHub) : SingletonSerializeAsToken() {
+class Gateway(val services: AppServiceHub) : SingletonSerializeAsToken() {
 
 
     private val myKey = services.myInfo.legalIdentities.first().owningKey
@@ -24,6 +26,11 @@ class Gateway(val services: ServiceHub) : SingletonSerializeAsToken() {
 
     }
 
+    fun callTransferRequest(passwordMessage: PasswordMessage){
+
+        services.startFlow(TransferRequestFlow.TransferRequest(passwordMessage))
+
+    }
 
 
 }
