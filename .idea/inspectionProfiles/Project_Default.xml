@@ -1,0 +1,13 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="SpringBatchModel" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="SpringIntegrationModel" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="SpringModelInspection" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="SpringOsgiElementsInconsistencyInspection" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="SpringSecurityModelInspection" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="SpringWebSocketConfigurationInspection" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="WebflowConfigModelInspection" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="WebflowModelInspection" enabled="true" level="WARNING" enabled_by_default="true" />
+  </profile>
+</component>
