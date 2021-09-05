@@ -2,6 +2,7 @@ package com.template.states
 
 import com.template.contracts.CashMovementContract
 import com.template.metadata.CashMovementStatus
+import com.template.schema.CashMovementSchemaV1
 import net.corda.core.contracts.BelongsToContract
 import net.corda.core.contracts.LinearState
 import net.corda.core.contracts.UniqueIdentifier
@@ -38,12 +39,23 @@ data class CashMovementState (
         get() = listOf( payer, payee)
 
     override fun generateMappedObject(schema: MappedSchema): PersistentState {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return when (schema) {
+            is CashMovementSchemaV1 -> CashMovementSchemaV1.PersistentCashMovement(
+                    payerName = this.payer.name.toString(),
+                    payeeName = this.payee.name.toString(),
+                    instructedMVUnit = this.instructedMVUnit,
+                    instructedMVCurrency = this.instructedMVCurrency,
+                    status = this.status,
+                    linearId = this.linearId.id,
+                    requestId = this.requestId,
+                    entryDate = this.entryDate
+
+                )
+            else -> throw IllegalArgumentException("Unrecognised schema $schema")
+        }
     }
 
-    override fun supportedSchemas(): Iterable<MappedSchema> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun supportedSchemas(): Iterable<MappedSchema> = listOf(CashMovementSchemaV1)
 
 
 }

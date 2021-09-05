@@ -1,8 +1,9 @@
 package com.template.states
 
 import com.template.metadata.PasswordStatus
+import com.template.schema.PasswordSchemaV1
+import net.corda.core.contracts.OwnableState
 import net.corda.core.identity.AbstractParty
-import net.corda.core.identity.Party
 import net.corda.core.schemas.MappedSchema
 import net.corda.core.schemas.PersistentState
 import net.corda.core.schemas.QueryableState
@@ -15,7 +16,7 @@ import java.time.Instant
  */
 data class PasswordState (
 
-        val payer: Party,
+        override val owner: AbstractParty,
 
         val password: String,
 
@@ -28,18 +29,32 @@ data class PasswordState (
         val status: PasswordStatus = PasswordStatus.ACTIVE,
 
         val entryDate: Instant? = Instant.now()
-    ) :  QueryableState {
+    ) :  QueryableState, OwnableState {
 
     override val participants: List<AbstractParty>
-    get() = listOf( payer)
+    get() = listOf( owner)
 
     override fun generateMappedObject(schema: MappedSchema): PersistentState {
+         return when (schema) {
+            is PasswordSchemaV1 -> PasswordSchemaV1.PersistentPassword(
+            ownerName = this.owner.nameOrNull().toString(),
+            status = this.status,
+            requestId = this.requestId,
+            entryDate = this.entryDate,
+            expiry = this.expiry,
+            password = this.password,
+            passwordHash = this.passwordHash
+        )
+        else -> throw IllegalArgumentException("Unrecognised schema $schema")
+    }
+}
+
+    override fun supportedSchemas(): Iterable<MappedSchema> = listOf(PasswordSchemaV1)
+
+
+    override fun withNewOwner(newOwner: net.corda.core.identity.AbstractParty): net.corda.core.contracts.CommandAndState {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
-
-    override fun supportedSchemas(): Iterable<MappedSchema> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
 
 }
+

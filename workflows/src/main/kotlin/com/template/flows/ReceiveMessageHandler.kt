@@ -1,7 +1,6 @@
 package com.template.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.template.metadata.PasswordHashMessage
 import com.template.service.Gateway
 import net.corda.core.flows.FlowException
 import net.corda.core.flows.FlowLogic
@@ -28,7 +27,8 @@ class ReceiveMessageHandler(val session: FlowSession) : FlowLogic<Unit>() {
     @Suspendable
     override fun call() {
         progressTracker.currentStep = RECEIVING
-        val message = session.receive<PasswordHashMessage>().unwrap { it }
+//        val message = session.receive<PasswordHashMessage>().unwrap { it }
+        val message = session.receive<String>().unwrap { it }
 
         progressTracker.currentStep = CALCULATING
         val response = try {

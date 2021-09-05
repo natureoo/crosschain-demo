@@ -6,7 +6,6 @@ package com.template.service
  * @email 924943578@qq.com
  */
 import com.template.flows.TransferRequestFlow
-import com.template.metadata.PasswordHashMessage
 import com.template.metadata.PasswordMessage
 import net.corda.core.node.AppServiceHub
 import net.corda.core.node.services.CordaService
@@ -20,9 +19,10 @@ class Gateway(val services: AppServiceHub) : SingletonSerializeAsToken() {
 
     private val myKey = services.myInfo.legalIdentities.first().owningKey
 
-    fun sendMessage(passwordHashMessage: PasswordHashMessage): Int {
+//    fun sendMessage(passwordHashMessage: PasswordHashMessage): Int {
+    fun sendMessage(passwordHashMessage: String): String {
 
-        return 0;
+        return "";
 
     }
 

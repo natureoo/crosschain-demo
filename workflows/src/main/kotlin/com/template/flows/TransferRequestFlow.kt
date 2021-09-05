@@ -12,10 +12,7 @@ import com.template.states.CashMovementState
 import com.template.states.PasswordState
 import com.template.utils.setStep
 import net.corda.core.contracts.Command
-import net.corda.core.flows.FinalityFlow
-import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.InitiatingFlow
-import net.corda.core.flows.StartableByRPC
+import net.corda.core.flows.*
 import net.corda.core.internal.randomOrNull
 import net.corda.core.node.services.queryBy
 import net.corda.core.node.services.vault.Builder.equal
@@ -31,7 +28,7 @@ import java.time.Instant
  * @date 3/9/21 下午2:43
  * @email 924943578@qq.com
  */
-class TransferRequestFlow {
+object TransferRequestFlow {
 
     @InitiatingFlow
     @StartableByRPC
@@ -113,21 +110,27 @@ class TransferRequestFlow {
             }
 
             // Stage 2 - Verifying Transaction
-            setStep(TransferPendingFlow.TransferRequest.Companion.VERIFYING_TRANSACTION)
+            setStep(TransferRequestFlow.TransferRequest.Companion.VERIFYING_TRANSACTION)
             // Verify that the transaction is valid
             txBuilder.verify(serviceHub)
 
             // Stage 3 - Signing Transaction
-            setStep(TransferPendingFlow.TransferRequest.Companion.SIGNING_TRANSACTION)
+            setStep(TransferRequestFlow.TransferRequest.Companion.SIGNING_TRANSACTION)
             // Sign the transaction
             val signedTx = serviceHub.signInitialTransaction(txBuilder)
 
             // Stage 4 - Finalizing Transaction
             val receivers = listOf(cashMovementRequestState.payer, cashMovementRequestState.payee).filter {!it.equals(ourIdentity) }.map { party -> initiateFlow(party) }
-            return subFlow(FinalityFlow(signedTx, receivers, TransferPendingFlow.TransferRequest.Companion.FINALISING_TRANSACTION.childProgressTracker()))
+            return subFlow(FinalityFlow(signedTx, receivers, TransferRequestFlow.TransferRequest.Companion.FINALISING_TRANSACTION.childProgressTracker()))
 
         }
 
 
+    }
+
+    @InitiatedBy(TransferRequest::class)
+    class TransferRequestResponder(private val otherSession: FlowSession) : FlowLogic<SignedTransaction>() {
+        @Suspendable
+        override fun call() = subFlow(ReceiveFinalityFlow(otherSession))
     }
 }

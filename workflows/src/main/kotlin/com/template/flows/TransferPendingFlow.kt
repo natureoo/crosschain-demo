@@ -4,15 +4,11 @@ import co.paralleluniverse.fibers.Suspendable
 import com.template.contracts.CashMovementContract
 import com.template.contracts.PasswordContract
 import com.template.metadata.CashMovementStatus
-import com.template.metadata.PasswordHashMessage
 import com.template.states.CashMovementState
 import com.template.states.PasswordState
 import com.template.utils.setStep
 import net.corda.core.contracts.Command
-import net.corda.core.flows.FinalityFlow
-import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.InitiatingFlow
-import net.corda.core.flows.StartableByRPC
+import net.corda.core.flows.*
 import net.corda.core.identity.Party
 import net.corda.core.internal.randomOrNull
 import net.corda.core.transactions.SignedTransaction
@@ -31,11 +27,11 @@ import java.util.concurrent.ThreadLocalRandom
  * @date 3/9/21 下午2:43
  * @email 924943578@qq.com
  */
-class TransferPendingFlow {
+object TransferPendingFlow {
 
     @InitiatingFlow
     @StartableByRPC
-    class TransferRequest(
+    class TransferPending(
             val payer: Party,
             val payee: Party,
             val instructedMVUnit: BigDecimal,
@@ -89,11 +85,11 @@ class TransferPendingFlow {
             val pwdHash = getHash(pwd)
             val expiryAfterHours = 2L;// 2h
             val passwordState = PasswordState(
-                    payer = payer,
+                    owner = payer,
                     password = pwd,
                     passwordHash = pwdHash,
-                    requestId = UUID.randomUUID().toString(),
-                    expiry =  Instant.now().plus(expiryAfterHours, ChronoUnit.HOURS),
+                    requestId = requestId,
+                    expiry = Instant.now().plus(expiryAfterHours, ChronoUnit.HOURS),
                     entryDate = Instant.now()
             )
 
@@ -101,9 +97,9 @@ class TransferPendingFlow {
             val cashTransferPendingCmd = Command(CashMovementContract.Commands.CashTransferPendingCmd(),
                     cashMovementState.payer.owningKey)
             val passwordCreateCmd = Command(PasswordContract.Commands.CreateCmd(),
-                    passwordState.payer.owningKey)
+                    passwordState.owner.owningKey)
             val txBuilder = TransactionBuilder(notary).apply {
-                addOutputState(cashMovementState, CashMovementContract.CASH_MOVEMENT_CONTRACT_ID, notary, 1)
+                addOutputState(cashMovementState, CashMovementContract.CASH_MOVEMENT_CONTRACT_ID, notary, null)
                 addOutputState(passwordState, PasswordContract.PASSWORD_CONTRACT_ID)
                 addCommand(cashTransferPendingCmd)
                 addCommand(passwordCreateCmd)
@@ -121,17 +117,25 @@ class TransferPendingFlow {
             val signedTx = serviceHub.signInitialTransaction(txBuilder)
 
             // Stage 4 - Finalizing Transaction
-            val receivers = listOf(payer, payee).filter {!it.equals(ourIdentity) }.map { party -> initiateFlow(party) }
+            val receivers = listOf(payer, payee).filter { !it.equals(ourIdentity) }.map { party -> initiateFlow(party) }
             val transferPendingTransaction = subFlow(FinalityFlow(signedTx, receivers, FINALISING_TRANSACTION.childProgressTracker()))
 
-           subFlow(SendMessageFlow(payee, PasswordHashMessage(passwordState.requestId,passwordState.passwordHash )))
+//            subFlow(SendMessageFlow(payee, PasswordHashMessage(passwordState.requestId, passwordState.passwordHash)))
+            subFlow(SendMessageFlow(payee, passwordState.requestId + " " + passwordState.passwordHash))
 
             return transferPendingTransaction
         }
 
-        fun getHash(input:String): String {
+        fun getHash(input: String): String {
             val md = MessageDigest.getInstance("MD5")
             return BigInteger(1, md.digest(input.toByteArray())).toString(16).padStart(32, '0')
         }
+    }
+
+
+    @InitiatedBy(TransferPending::class)
+    class TransferPendingResponder(private val otherSession: FlowSession) : FlowLogic<SignedTransaction>() {
+        @Suspendable
+        override fun call() = subFlow(ReceiveFinalityFlow(otherSession))
     }
 }

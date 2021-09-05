@@ -1,7 +1,6 @@
 package com.template.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.template.metadata.PasswordHashMessage
 import net.corda.core.flows.FlowLogic
 import net.corda.core.flows.InitiatingFlow
 import net.corda.core.identity.Party
@@ -13,7 +12,9 @@ import net.corda.core.utilities.unwrap
  * @email 924943578@qq.com
  */
 @InitiatingFlow
-class SendMessageFlow(val targetParty: Party, val passwordHashMessage: PasswordHashMessage) : FlowLogic<PasswordHashMessage>() {
+//class SendMessageFlow(val targetParty: Party, val passwordHashMessage: PasswordHashMessage) : FlowLogic<PasswordHashMessage>() {
+class SendMessageFlow(val targetParty: Party, val passwordHashMessage: String) : FlowLogic<String>() {
     @Suspendable
-    override fun call() = initiateFlow(targetParty).sendAndReceive<PasswordHashMessage>(passwordHashMessage).unwrap { it }
+//    override fun call() = initiateFlow(targetParty).sendAndReceive<PasswordHashMessage>(passwordHashMessage).unwrap { it }
+    override fun call() = initiateFlow(targetParty).sendAndReceive<String>(passwordHashMessage).unwrap { it }
 }

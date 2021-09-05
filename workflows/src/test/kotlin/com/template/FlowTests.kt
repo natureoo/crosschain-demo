@@ -1,6 +1,7 @@
 package com.template
 
 import com.template.flows.TransferPendingFlow
+import com.template.flows.TransferRequestFlow
 import net.corda.core.utilities.getOrThrow
 import net.corda.testing.core.singleIdentity
 import net.corda.testing.node.MockNetwork
@@ -35,8 +36,8 @@ class FlowTests {
         payerNode = network.createPartyNode()
         payeeNode = network.createPartyNode()
 
-//        listOf(payerNode, payeeNode).forEach { it.registerInitiatedFlow(TransferPendingFlow.LoadRequestResponder::class.java)}
-//        listOf(payerNode, payeeNode).forEach { it.registerInitiatedFlow(LoadAcceptFlow.LoadCompleteResponder::class.java)}
+        listOf(payerNode, payeeNode).forEach { it.registerInitiatedFlow(TransferPendingFlow.TransferPendingResponder::class.java)}
+        listOf(payerNode, payeeNode).forEach { it.registerInitiatedFlow(TransferRequestFlow.TransferRequestResponder::class.java)}
 //        network.runNetwork()
 
     }
@@ -48,7 +49,7 @@ class FlowTests {
 
     @Test
     fun testStatusLoadRequest() {
-        val flow = TransferPendingFlow.TransferRequest(payerNode.info.singleIdentity(), payeeNode.info.singleIdentity(), BigDecimal.ONE, Currency.getInstance("SGD")) // instructedMVCurrency
+        val flow = TransferPendingFlow.TransferPending(payerNode.info.singleIdentity(), payeeNode.info.singleIdentity(), BigDecimal.ONE, Currency.getInstance("SGD")) // instructedMVCurrency
         val future = payerNode.startFlow(flow)
         network.runNetwork()
         val signedTransaction = future.getOrThrow()
