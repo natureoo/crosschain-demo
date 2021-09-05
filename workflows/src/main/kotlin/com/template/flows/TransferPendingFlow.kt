@@ -86,6 +86,7 @@ object TransferPendingFlow {
             val expiryAfterHours = 2L;// 2h
             val passwordState = PasswordState(
                     owner = payer,
+                    payee = payee,
                     password = pwd,
                     passwordHash = pwdHash,
                     requestId = requestId,

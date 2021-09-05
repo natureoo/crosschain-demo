@@ -121,7 +121,7 @@ object TransferRequestFlow {
 
             // Stage 4 - Finalizing Transaction
             val receivers = listOf(cashMovementRequestState.payer, cashMovementRequestState.payee).filter {!it.equals(ourIdentity) }.map { party -> initiateFlow(party) }
-            return subFlow(FinalityFlow(signedTx, receivers, TransferRequestFlow.TransferRequest.Companion.FINALISING_TRANSACTION.childProgressTracker()))
+            return subFlow(FinalityFlow(signedTx, receivers, Companion.FINALISING_TRANSACTION.childProgressTracker()))
 
         }
 

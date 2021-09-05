@@ -30,6 +30,9 @@ object PasswordSchemaV1 : MappedSchema(
             @Column(name = "owner")
             var ownerName: String,
 
+            @Column(name = "payee")
+            var payeeName: String,
+
             @Column(name = "password")
             var password: String,
 

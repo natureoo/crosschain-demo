@@ -2,6 +2,8 @@ package com.template
 
 import com.template.flows.TransferPendingFlow
 import com.template.flows.TransferRequestFlow
+import com.template.metadata.PasswordMessage
+import com.template.states.PasswordState
 import net.corda.core.utilities.getOrThrow
 import net.corda.testing.core.singleIdentity
 import net.corda.testing.node.MockNetwork
@@ -26,6 +28,9 @@ class FlowTests {
     private lateinit var payerNode: StartedMockNode
     private lateinit var payeeNode: StartedMockNode
 
+//    private val oracleIdentity = TestIdentity(CordaX500Name("Oracle", "New York", "US"))
+//    private val oracleService = MockServices(listOf("com.template.contracts"), oracleIdentity)
+    private lateinit var passwordState: PasswordState
 
     @Before
     fun setup() {
@@ -48,12 +53,34 @@ class FlowTests {
     }
 
     @Test
-    fun testStatusLoadRequest() {
+    fun testTransferPending() {
         val flow = TransferPendingFlow.TransferPending(payerNode.info.singleIdentity(), payeeNode.info.singleIdentity(), BigDecimal.ONE, Currency.getInstance("SGD")) // instructedMVCurrency
         val future = payerNode.startFlow(flow)
         network.runNetwork()
         val signedTransaction = future.getOrThrow()
         var outputs = signedTransaction.tx.outputs
         assertEquals(2, outputs.size)
+        passwordState = signedTransaction.tx.outputsOfType<PasswordState>().single()
+
+    }
+
+    @Test
+    fun testTransferRequest() {
+        testTransferPending()
+//        val flow = TransferPendingFlow.TransferPending(payerNode.info.singleIdentity(), payeeNode.info.singleIdentity(), BigDecimal.ONE, Currency.getInstance("SGD")) // instructedMVCurrency
+//        val future = payerNode.startFlow(flow)
+//        network.runNetwork()
+//        val signedTransaction = future.getOrThrow()
+//        var outputs = signedTransaction.tx.outputs
+//        passwordState = signedTransaction.tx.outputsOfType<PasswordState>().single()
+
+
+        val passwordMessage = PasswordMessage(passwordState.requestId, passwordState.password)
+        val transferRequestFlow = TransferRequestFlow.TransferRequest(passwordMessage) // instructedMVCurrency
+        val transferRequestFuture = payeeNode.startFlow(transferRequestFlow)
+        network.runNetwork()
+        val transferRequestSignedTransaction = transferRequestFuture.getOrThrow()
+        var transferRequestOutputs = transferRequestSignedTransaction.tx.outputs
+        assertEquals(2, transferRequestOutputs.size)
     }
 }

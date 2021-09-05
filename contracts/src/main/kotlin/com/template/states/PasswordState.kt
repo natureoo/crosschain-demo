@@ -4,6 +4,7 @@ import com.template.metadata.PasswordStatus
 import com.template.schema.PasswordSchemaV1
 import net.corda.core.contracts.OwnableState
 import net.corda.core.identity.AbstractParty
+import net.corda.core.identity.Party
 import net.corda.core.schemas.MappedSchema
 import net.corda.core.schemas.PersistentState
 import net.corda.core.schemas.QueryableState
@@ -17,6 +18,8 @@ import java.time.Instant
 data class PasswordState (
 
         override val owner: AbstractParty,
+        val payee: Party,
+
 
         val password: String,
 
@@ -38,6 +41,7 @@ data class PasswordState (
          return when (schema) {
             is PasswordSchemaV1 -> PasswordSchemaV1.PersistentPassword(
             ownerName = this.owner.nameOrNull().toString(),
+            payeeName = this.payee.name.toString(),
             status = this.status,
             requestId = this.requestId,
             entryDate = this.entryDate,
