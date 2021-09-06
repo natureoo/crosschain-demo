@@ -94,15 +94,16 @@ object TransferRequestFlow {
             )
 
             val cashTransferRequestCmd = Command(CashMovementContract.Commands.CashTransferRequestCmd(),
-                    cashMovementRequestState.payer.owningKey)
+                    cashMovementRequestState.payee.owningKey)
             val passwordConsumedCmd = Command(PasswordContract.Commands.ConsumeCmd(passwordMessage.password),
-                    cashMovementRequestState.payer.owningKey)
+                    cashMovementRequestState.payee.owningKey)
 
             val txBuilder = TransactionBuilder(notary).apply {
                 addInputState(cashMovementPendingStateAndRef)
                 addInputState(passwordStateAndRef)
 
-                addOutputState(cashMovementRequestState, CashMovementContract.CASH_MOVEMENT_CONTRACT_ID, notary, 1) // Encumbrance is at index 1
+//                addOutputState(cashMovementRequestState, CashMovementContract.CASH_MOVEMENT_CONTRACT_ID, notary, 1) // Encumbrance is at index 1
+                addOutputState(cashMovementRequestState, CashMovementContract.CASH_MOVEMENT_CONTRACT_ID, notary, null) // Encumbrance is at index 1
                 addOutputState(passwordState) // Encumbrance is at index 1
                 addCommand(cashTransferRequestCmd)
                 addCommand(passwordConsumedCmd)
@@ -121,8 +122,8 @@ object TransferRequestFlow {
 
             // Stage 4 - Finalizing Transaction
             val receivers = listOf(cashMovementRequestState.payer, cashMovementRequestState.payee).filter {!it.equals(ourIdentity) }.map { party -> initiateFlow(party) }
-            return subFlow(FinalityFlow(signedTx, receivers, Companion.FINALISING_TRANSACTION.childProgressTracker()))
-
+            val signedTransaction = subFlow(FinalityFlow(signedTx, receivers, Companion.FINALISING_TRANSACTION.childProgressTracker()))
+            return signedTransaction
         }
 
 

@@ -85,7 +85,7 @@ object TransferPendingFlow {
             val pwdHash = getHash(pwd)
             val expiryAfterHours = 2L;// 2h
             val passwordState = PasswordState(
-                    owner = payer,
+                    payer = payer,
                     payee = payee,
                     password = pwd,
                     passwordHash = pwdHash,
@@ -98,7 +98,7 @@ object TransferPendingFlow {
             val cashTransferPendingCmd = Command(CashMovementContract.Commands.CashTransferPendingCmd(),
                     cashMovementState.payer.owningKey)
             val passwordCreateCmd = Command(PasswordContract.Commands.CreateCmd(),
-                    passwordState.owner.owningKey)
+                    passwordState.payer.owningKey)
             val txBuilder = TransactionBuilder(notary).apply {
                 addOutputState(cashMovementState, CashMovementContract.CASH_MOVEMENT_CONTRACT_ID, notary, null)
                 addOutputState(passwordState, PasswordContract.PASSWORD_CONTRACT_ID)

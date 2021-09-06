@@ -52,5 +52,8 @@ object CashMovementSchemaV1 : MappedSchema(
             var status: CashMovementStatus?,
             @Column(name = "linear_id")
             var linearId: UUID
-    ) : PersistentState()
+    ) : PersistentState(){
+        constructor() : this("", "", BigDecimal.ZERO, Currency.getInstance("SGD"), "", Instant.now(), CashMovementStatus.TRANSFER_PENDING, UUID.randomUUID())
+
+    }
 }

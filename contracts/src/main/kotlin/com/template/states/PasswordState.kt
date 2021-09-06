@@ -1,8 +1,9 @@
 package com.template.states
 
+import com.template.contracts.PasswordContract
 import com.template.metadata.PasswordStatus
 import com.template.schema.PasswordSchemaV1
-import net.corda.core.contracts.OwnableState
+import net.corda.core.contracts.BelongsToContract
 import net.corda.core.identity.AbstractParty
 import net.corda.core.identity.Party
 import net.corda.core.schemas.MappedSchema
@@ -15,9 +16,10 @@ import java.time.Instant
  * @date 3/9/21 上午11:45
  * @email 924943578@qq.com
  */
+@BelongsToContract(PasswordContract::class)
 data class PasswordState (
 
-        override val owner: AbstractParty,
+        val payer: Party,
         val payee: Party,
 
 
@@ -32,15 +34,15 @@ data class PasswordState (
         val status: PasswordStatus = PasswordStatus.ACTIVE,
 
         val entryDate: Instant? = Instant.now()
-    ) :  QueryableState, OwnableState {
+    ) :  QueryableState {
 
     override val participants: List<AbstractParty>
-    get() = listOf( owner)
+    get() = listOf( payer, payee)
 
     override fun generateMappedObject(schema: MappedSchema): PersistentState {
          return when (schema) {
             is PasswordSchemaV1 -> PasswordSchemaV1.PersistentPassword(
-            ownerName = this.owner.nameOrNull().toString(),
+            payerName = this.payer.nameOrNull().toString(),
             payeeName = this.payee.name.toString(),
             status = this.status,
             requestId = this.requestId,
@@ -56,9 +58,6 @@ data class PasswordState (
     override fun supportedSchemas(): Iterable<MappedSchema> = listOf(PasswordSchemaV1)
 
 
-    override fun withNewOwner(newOwner: net.corda.core.identity.AbstractParty): net.corda.core.contracts.CommandAndState {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
 
 }
 

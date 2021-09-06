@@ -27,8 +27,8 @@ object PasswordSchemaV1 : MappedSchema(
     @Table(name = "password_states")
     class PersistentPassword(
 
-            @Column(name = "owner")
-            var ownerName: String,
+            @Column(name = "payer")
+            var payerName: String,
 
             @Column(name = "payee")
             var payeeName: String,
@@ -49,5 +49,7 @@ object PasswordSchemaV1 : MappedSchema(
             var entryDate: Instant?,
             @Column(name = "status")
             var status: PasswordStatus
-    ) : PersistentState()
+    ) : PersistentState(){
+        constructor() : this("", "", "", "", "", Instant.now(), Instant.now(), PasswordStatus.ACTIVE)
+    }
 }
