@@ -1,11 +1,10 @@
 package com.template.states
 
 import com.template.contracts.PasswordContract
-import com.template.metadata.PasswordStatus
 import com.template.schema.PasswordSchemaV1
 import net.corda.core.contracts.BelongsToContract
+import net.corda.core.contracts.OwnableState
 import net.corda.core.identity.AbstractParty
-import net.corda.core.identity.Party
 import net.corda.core.schemas.MappedSchema
 import net.corda.core.schemas.PersistentState
 import net.corda.core.schemas.QueryableState
@@ -19,35 +18,23 @@ import java.time.Instant
 @BelongsToContract(PasswordContract::class)
 data class PasswordState (
 
-        val payer: Party,
-        val payee: Party,
-
-
-        val password: String,
+        override val owner: AbstractParty,
 
         val passwordHash: String,
 
-        val requestId: String,
-
-        val expiry: Instant,
-
-        val status: PasswordStatus = PasswordStatus.ACTIVE,
+        val password: String,
 
         val entryDate: Instant? = Instant.now()
-    ) :  QueryableState {
+) :  QueryableState, OwnableState {
 
     override val participants: List<AbstractParty>
-    get() = listOf( payer, payee)
+    get() = listOf( owner)
 
     override fun generateMappedObject(schema: MappedSchema): PersistentState {
          return when (schema) {
             is PasswordSchemaV1 -> PasswordSchemaV1.PersistentPassword(
-            payerName = this.payer.nameOrNull().toString(),
-            payeeName = this.payee.name.toString(),
-            status = this.status,
-            requestId = this.requestId,
+            ownerName = this.owner.nameOrNull().toString(),
             entryDate = this.entryDate,
-            expiry = this.expiry,
             password = this.password,
             passwordHash = this.passwordHash
         )
@@ -57,7 +44,11 @@ data class PasswordState (
 
     override fun supportedSchemas(): Iterable<MappedSchema> = listOf(PasswordSchemaV1)
 
+    override fun withNewOwner(newOwner: net.corda.core.identity.AbstractParty): net.corda.core.contracts.CommandAndState {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
 
 
 }
+
 

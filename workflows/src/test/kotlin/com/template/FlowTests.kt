@@ -3,6 +3,8 @@ package com.template
 import com.template.flows.TransferPendingFlow
 import com.template.flows.TransferRequestFlow
 import com.template.metadata.PasswordMessage
+import com.template.states.CashMovementState
+import com.template.states.PasswordHashState
 import com.template.states.PasswordState
 import net.corda.core.contracts.StateAndRef
 import net.corda.core.utilities.getOrThrow
@@ -32,7 +34,9 @@ class FlowTests {
 
 //    private val oracleIdentity = TestIdentity(CordaX500Name("Oracle", "New York", "US"))
 //    private val oracleService = MockServices(listOf("com.template.contracts"), oracleIdentity)
+    private lateinit var passwordHashState: PasswordHashState
     private lateinit var passwordState: PasswordState
+    private lateinit var cashMovementState: CashMovementState
 
     @Before
     fun setup() {
@@ -61,8 +65,10 @@ class FlowTests {
         network.runNetwork()
         val signedTransaction = future.getOrThrow()
         var outputs = signedTransaction.tx.outputs
-        assertEquals(2, outputs.size)
+        assertEquals(3, outputs.size)
+        passwordHashState = signedTransaction.tx.outputsOfType<PasswordHashState>().single()
         passwordState = signedTransaction.tx.outputsOfType<PasswordState>().single()
+        cashMovementState = signedTransaction.tx.outputsOfType<CashMovementState>().single()
 
     }
 
@@ -74,16 +80,17 @@ class FlowTests {
         network.runNetwork()
         val signedTransaction = future.getOrThrow()
         var outputs = signedTransaction.tx.outputs
+//        passwordHashState = signedTransaction.tx.outputsOfType<PasswordHashState>().single()
         passwordState = signedTransaction.tx.outputsOfType<PasswordState>().single()
 
         payeeNode.transaction {
 //            val ious: List<StateAndRef<CashMovementState>> = payeeNode.services.vaultService.queryBy(CashMovementState::class.java).states
 //            Assert.assertEquals(1, ious.size.toLong())
 
-            val passwordStates: List<StateAndRef<PasswordState>> = payeeNode.services.vaultService.queryBy(PasswordState::class.java).states
-            Assert.assertEquals(1, passwordStates.size.toLong())
+            val passwordHashStates: List<StateAndRef<PasswordHashState>> = payeeNode.services.vaultService.queryBy(PasswordHashState::class.java).states
+            Assert.assertEquals(1, passwordHashStates.size.toLong())
 
-            val passwordMessage = PasswordMessage(passwordState.requestId, passwordState.password)
+            val passwordMessage = PasswordMessage(passwordState.passwordHash, passwordState.password)
             val transferRequestFlow = TransferRequestFlow.TransferRequest(passwordMessage) // instructedMVCurrency
             val transferRequestFuture = payeeNode.startFlow(transferRequestFlow)
             network.runNetwork()

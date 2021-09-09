@@ -3,9 +3,12 @@ package com.template.flows
 import co.paralleluniverse.fibers.Suspendable
 import com.template.contracts.CashMovementContract
 import com.template.contracts.PasswordContract
+import com.template.contracts.PasswordHashContract
 import com.template.metadata.CashMovementStatus
 import com.template.states.CashMovementState
+import com.template.states.PasswordHashState
 import com.template.states.PasswordState
+import com.template.utils.Util
 import com.template.utils.setStep
 import net.corda.core.contracts.Command
 import net.corda.core.flows.*
@@ -15,12 +18,9 @@ import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
 import java.math.BigDecimal
-import java.math.BigInteger
-import java.security.MessageDigest
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.*
-import java.util.concurrent.ThreadLocalRandom
 
 /**
  * @author nature
@@ -69,7 +69,8 @@ object TransferPendingFlow {
                     ?: throw IllegalStateException("Empty notaryIdentities")
             // Stage 1 - Generating Transaction
             setStep(GENERATING_TRANSACTION)
-            val requestId = UUID.randomUUID().toString()
+            val pwd = UUID.randomUUID().toString()
+            val pwdHash = Util.getHash(pwd)
             val cashMovementState = CashMovementState(
                     payer = payer,
                     payee = payee,
@@ -77,30 +78,33 @@ object TransferPendingFlow {
                     instructedMVUnit = instructedMVUnit,
                     instructedMVCurrency = instructedMVCurrency,
                     status = CashMovementStatus.TRANSFER_PENDING,
-                    requestId = requestId,
-                    entryDate = Instant.now()
+                    passwordHash = pwdHash
             )
 
-            val pwd = ThreadLocalRandom.current().toString()
-            val pwdHash = getHash(pwd)
+
             val expiryAfterHours = 2L;// 2h
-            val passwordState = PasswordState(
+            val passwordHashState = PasswordHashState(
                     payer = payer,
                     payee = payee,
-                    password = pwd,
+//                    password = pwd,
                     passwordHash = pwdHash,
-                    requestId = requestId,
-                    expiry = Instant.now().plus(expiryAfterHours, ChronoUnit.HOURS),
-                    entryDate = Instant.now()
+//                    requestId = requestId,
+                    expiry = Instant.now().plus(expiryAfterHours, ChronoUnit.HOURS)
+            )
+            val passwordState = PasswordState(
+                    owner = payer,
+                    password = pwd,
+                    passwordHash = pwdHash
             )
 
 
             val cashTransferPendingCmd = Command(CashMovementContract.Commands.CashTransferPendingCmd(),
                     cashMovementState.payer.owningKey)
-            val passwordCreateCmd = Command(PasswordContract.Commands.CreateCmd(),
-                    passwordState.payer.owningKey)
+            val passwordCreateCmd = Command(PasswordHashContract.Commands.CreateCmd(),
+                    passwordHashState.payer.owningKey)
             val txBuilder = TransactionBuilder(notary).apply {
                 addOutputState(cashMovementState, CashMovementContract.CASH_MOVEMENT_CONTRACT_ID, notary, null)
+                addOutputState(passwordHashState, PasswordHashContract.PASSWORD_HASH_CONTRACT_ID)
                 addOutputState(passwordState, PasswordContract.PASSWORD_CONTRACT_ID)
                 addCommand(cashTransferPendingCmd)
                 addCommand(passwordCreateCmd)
@@ -121,16 +125,13 @@ object TransferPendingFlow {
             val receivers = listOf(payer, payee).filter { !it.equals(ourIdentity) }.map { party -> initiateFlow(party) }
             val transferPendingTransaction = subFlow(FinalityFlow(signedTx, receivers, FINALISING_TRANSACTION.childProgressTracker()))
 
-//            subFlow(SendMessageFlow(payee, PasswordHashMessage(passwordState.requestId, passwordState.passwordHash)))
-            subFlow(SendMessageFlow(payee, passwordState.requestId + " " + passwordState.passwordHash))
+//            subFlow(SendMessageFlow(payee, PasswordHashMessage(passwordHashState.requestId, passwordHashState.passwordHash)))
+            subFlow(SendMessageFlow(payee,  passwordHashState.passwordHash))
 
             return transferPendingTransaction
         }
 
-        fun getHash(input: String): String {
-            val md = MessageDigest.getInstance("MD5")
-            return BigInteger(1, md.digest(input.toByteArray())).toString(16).padStart(32, '0')
-        }
+
     }
 
 

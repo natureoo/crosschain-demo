@@ -29,7 +29,7 @@ data class CashMovementState (
         val instructedMVUnit: BigDecimal,
         val instructedMVCurrency: Currency,
 
-        val requestId: String,
+        val passwordHash: String,
         val entryDate: Instant? = Instant.now(),
         val status: CashMovementStatus,
         override val linearId: UniqueIdentifier = UniqueIdentifier()
@@ -47,7 +47,7 @@ data class CashMovementState (
                     instructedMVCurrency = this.instructedMVCurrency,
                     status = this.status,
                     linearId = this.linearId.id,
-                    requestId = this.requestId,
+                    passwordHash = this.passwordHash,
                     entryDate = this.entryDate
 
                 )

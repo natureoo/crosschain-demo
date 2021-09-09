@@ -1,6 +1,5 @@
 package com.template.schema
 
-import com.template.metadata.PasswordStatus
 import net.corda.core.schemas.MappedSchema
 import net.corda.core.schemas.PersistentState
 import java.time.Instant
@@ -27,11 +26,8 @@ object PasswordSchemaV1 : MappedSchema(
     @Table(name = "password_states")
     class PersistentPassword(
 
-            @Column(name = "payer")
-            var payerName: String,
-
-            @Column(name = "payee")
-            var payeeName: String,
+            @Column(name = "owner")
+            var ownerName: String,
 
             @Column(name = "password")
             var password: String,
@@ -39,17 +35,10 @@ object PasswordSchemaV1 : MappedSchema(
             @Column(name = "passwordHash")
             var passwordHash: String,
 
-            @Column(name = "requestId")
-            var requestId: String,
-
-            @Column(name = "expiry")
-            var expiry: Instant,
 
             @Column(name = "entry_date")
-            var entryDate: Instant?,
-            @Column(name = "status")
-            var status: PasswordStatus
+            var entryDate: Instant?
     ) : PersistentState(){
-        constructor() : this("", "", "", "", "", Instant.now(), Instant.now(), PasswordStatus.ACTIVE)
+        constructor() : this("", "", "", Instant.now())
     }
 }

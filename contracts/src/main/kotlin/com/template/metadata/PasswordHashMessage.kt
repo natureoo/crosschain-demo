@@ -10,7 +10,7 @@ import net.corda.core.serialization.CordaSerializable
 @CordaSerializable
 data class PasswordHashMessage (
 
-    val requestId: String,
+//    val requestId: String,
     val passwordHash: String
 
 )

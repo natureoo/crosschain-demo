@@ -43,8 +43,8 @@ object CashMovementSchemaV1 : MappedSchema(
             @Column(name = "instructed_mv_currency")
             var instructedMVCurrency: Currency,
 
-            @Column(name = "requestId")
-            var requestId: String,
+            @Column(name = "passwordHash")
+            var passwordHash: String,
 
             @Column(name = "entry_date")
             var entryDate: Instant?,

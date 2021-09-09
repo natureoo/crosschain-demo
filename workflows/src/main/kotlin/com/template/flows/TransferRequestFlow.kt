@@ -2,14 +2,14 @@ package com.template.flows
 
 import co.paralleluniverse.fibers.Suspendable
 import com.template.contracts.CashMovementContract
-import com.template.contracts.PasswordContract
+import com.template.contracts.PasswordHashContract
 import com.template.metadata.CashMovementStatus
+import com.template.metadata.PasswordHashStatus
 import com.template.metadata.PasswordMessage
-import com.template.metadata.PasswordStatus
 import com.template.schema.CashMovementSchemaV1
-import com.template.schema.PasswordSchemaV1
+import com.template.schema.PasswordHashSchemaV1
 import com.template.states.CashMovementState
-import com.template.states.PasswordState
+import com.template.states.PasswordHashState
 import com.template.utils.setStep
 import net.corda.core.contracts.Command
 import net.corda.core.flows.*
@@ -68,18 +68,18 @@ object TransferRequestFlow {
             // Stage 1 - Generating Transaction
 
 
-            val passwordRequestIdCriteria = QueryCriteria.VaultCustomQueryCriteria(
-                    PasswordSchemaV1.PersistentPassword::requestId.equal(passwordMessage.requestId)
+            val passwordHashRequestIdCriteria = QueryCriteria.VaultCustomQueryCriteria(
+                    PasswordHashSchemaV1.PersistentPasswordHash::passwordHash.equal(passwordMessage.passwordHash)
             )
 
-            val passwordStatusCriteria = QueryCriteria.VaultCustomQueryCriteria(
-                    PasswordSchemaV1.PersistentPassword::status.equal(PasswordStatus.ACTIVE)
+            val passwordHashStatusCriteria = QueryCriteria.VaultCustomQueryCriteria(
+                    PasswordHashSchemaV1.PersistentPasswordHash::status.equal(PasswordHashStatus.ACTIVE)
             )
 
-            val passwordStateAndRef = serviceHub.vaultService.queryBy<PasswordState>(passwordRequestIdCriteria.and(passwordStatusCriteria)).states.single()
+            val passwordHashStateAndRef = serviceHub.vaultService.queryBy<PasswordHashState>(passwordHashRequestIdCriteria.and(passwordHashStatusCriteria)).states.single()
 
             val cashMovementRequestIdCriteria = QueryCriteria.VaultCustomQueryCriteria(
-                    CashMovementSchemaV1.PersistentCashMovement::requestId.equal(passwordMessage.requestId)
+                    CashMovementSchemaV1.PersistentCashMovement::passwordHash.equal(passwordMessage.passwordHash)
             )
 
             val cashMovementPendingStateAndRef = serviceHub.vaultService.queryBy<CashMovementState>(cashMovementRequestIdCriteria).states.single()
@@ -89,25 +89,25 @@ object TransferRequestFlow {
                     status = CashMovementStatus.TRANSFER_REQUEST
             )
 
-            val passwordState = passwordStateAndRef.state.data.copy(
-                    status = PasswordStatus.INACTIVE
+            val passwordHashState = passwordHashStateAndRef.state.data.copy(
+                    status = PasswordHashStatus.INACTIVE
             )
 
             val cashTransferRequestCmd = Command(CashMovementContract.Commands.CashTransferRequestCmd(),
                     cashMovementRequestState.payee.owningKey)
-            val passwordConsumedCmd = Command(PasswordContract.Commands.ConsumeCmd(passwordMessage.password),
+            val passwordConsumedCmd = Command(PasswordHashContract.Commands.ConsumeCmd(passwordMessage.password),
                     cashMovementRequestState.payee.owningKey)
 
             val txBuilder = TransactionBuilder(notary).apply {
                 addInputState(cashMovementPendingStateAndRef)
-                addInputState(passwordStateAndRef)
+                addInputState(passwordHashStateAndRef)
 
 //                addOutputState(cashMovementRequestState, CashMovementContract.CASH_MOVEMENT_CONTRACT_ID, notary, 1) // Encumbrance is at index 1
                 addOutputState(cashMovementRequestState, CashMovementContract.CASH_MOVEMENT_CONTRACT_ID, notary, null) // Encumbrance is at index 1
-                addOutputState(passwordState) // Encumbrance is at index 1
+                addOutputState(passwordHashState) // Encumbrance is at index 1
                 addCommand(cashTransferRequestCmd)
                 addCommand(passwordConsumedCmd)
-                setTimeWindow(Instant.now(), Duration.ofSeconds(10));
+                setTimeWindow(Instant.now(), Duration.ofSeconds(120));
             }
 
             // Stage 2 - Verifying Transaction

@@ -1,7 +1,7 @@
 package com.template.contracts
 
-import com.template.states.CashMovementState
 import com.template.metadata.CashMovementStatus
+import com.template.states.CashMovementState
 import net.corda.core.contracts.CommandData
 import net.corda.core.contracts.Contract
 import net.corda.core.contracts.TypeOnlyCommandData
@@ -44,9 +44,9 @@ class CashMovementContract : Contract {
                 requireThat {
                     "${commands.size} must equals to to 2" using (commands.size == 2)
                     if( commands[0].value is Commands.CashTransferRequestCmd)
-                        requireThat {"commands[1].value  must equals to to PasswordContract.Commands.ConsumeCmd" using (commands[1].value is PasswordContract.Commands.ConsumeCmd)}
+                        requireThat {"commands[1].value  must equals to to PasswordContract.Commands.ConsumeCmd" using (commands[1].value is PasswordHashContract.Commands.ConsumeCmd)}
                     else
-                        requireThat {"commands[0].value  must equals to to PasswordContract.Commands.ConsumeCmd" using (commands[0].value is PasswordContract.Commands.ConsumeCmd)}
+                        requireThat {"commands[0].value  must equals to to PasswordContract.Commands.ConsumeCmd" using (commands[0].value is PasswordHashContract.Commands.ConsumeCmd)}
 
                 }
             }

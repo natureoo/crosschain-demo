@@ -8,7 +8,7 @@ import net.corda.core.serialization.CordaSerializable
  * @email 924943578@qq.com
  */
 @CordaSerializable
-enum class PasswordStatus {
+enum class PasswordHashStatus {
     ACTIVE,
     INACTIVE
 }
