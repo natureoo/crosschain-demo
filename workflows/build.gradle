@@ -39,6 +39,11 @@ configurations {
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    compile "org.web3j:core:4.3.0"
+    compile "org.web3j:quorum:4.5.1"
+    compile "org.bitcoinj:bitcoinj-core:0.14.6"
+
+
     testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
     testCompile "junit:junit:$junit_version"
 
