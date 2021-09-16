@@ -69,8 +69,8 @@ object TransferPendingFlow {
                     ?: throw IllegalStateException("Empty notaryIdentities")
             // Stage 1 - Generating Transaction
             setStep(GENERATING_TRANSACTION)
-            val pwd = UUID.randomUUID().toString()
-            val pwdHash = Util.getHash(pwd)
+            val pwd = Util.generatePassword()
+            val pwdHash = Util.generateHash(pwd)
             val cashMovementState = CashMovementState(
                     payer = payer,
                     payee = payee,

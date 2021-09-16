@@ -1,8 +1,9 @@
 package com.template.utils
 
 import org.web3j.utils.Numeric
-import java.math.BigInteger
 import java.security.MessageDigest
+import java.util.*
+
 
 /**
  * @author nature
@@ -12,27 +13,23 @@ import java.security.MessageDigest
 class Util {
 
     companion object {
-        fun getHash(input: String): String {
-            val md = MessageDigest.getInstance("SHA-256")
-            return BigInteger(1, md.digest(input.toByteArray())).toString(16).padStart(32, '0')
+        fun generatePassword(): String {
+//            val bytes = UUID.randomUUID().toString().toByteArray()
+//            return toHexString(bytes)
+
+            val bytes = ByteArray(32)
+            Random().nextBytes(bytes)
+            return toHexString(bytes)
         }
 
-//        fun toHexString(array: ByteArray): String {
-//            return DatatypeConverter.printHexBinary(array)
-//        }
-//
-//        fun hexToByteArray(s: String): ByteArray {
-//            return DatatypeConverter.parseHexBinary(s)
-//        }
 
+        fun generateHash(input: String): String {
+            val inputBytes = hexToByteArray(input)
+            val md = MessageDigest.getInstance("SHA-256")
+            val outputBytes = md.digest(inputBytes)
+            return toHexString(outputBytes)
+        }
 
-        //    public static String toHexString(byte[] array) {
-//        return DatatypeConverter.printHexBinary(array);
-//    }
-//
-//    public static byte[] hexToByteArray(String s) {
-//        return DatatypeConverter.parseHexBinary(s);
-//    }
         fun toHexString(array: ByteArray): String {
             return Numeric.toHexString(array)
         }

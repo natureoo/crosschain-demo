@@ -34,7 +34,7 @@ class PasswordHashContract : Contract {
 
                     val consumeCommand = tx.commands.requireSingleCommand<Commands.ConsumeCmd>().value
                     val passwordHashState = tx.inputsOfType<PasswordHashState>().single()
-                    val verifyPasswordHash = Util.getHash(consumeCommand.verifyPassword)
+                    val verifyPasswordHash = Util.generateHash(consumeCommand.verifyPassword)
 
                     requireThat {
                         "${passwordHashState.passwordHash} must equals to to " using (passwordHashState.passwordHash == verifyPasswordHash)

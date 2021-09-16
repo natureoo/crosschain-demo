@@ -4,15 +4,11 @@ import net.corda.core.serialization.CordaSerializable
 
 /**
  * @author nature
- * @date 4/9/21 上午10:40
+ * @date 3/9/21 下午12:02
  * @email 924943578@qq.com
  */
 @CordaSerializable
-data class ETHAccount (
-
-    var role: Role,
-    val myAddress: String,
-    val toAddress: String,
-    val privateKey: String
-
-)
+enum class Role {
+    PAYER, //A
+    PAYEE  //B
+}
