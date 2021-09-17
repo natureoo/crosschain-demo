@@ -1,7 +1,7 @@
 package com.template.contracts
 
 import com.template.states.PasswordHashState
-import com.template.utils.Util
+import com.template.tool.Util
 import net.corda.core.contracts.*
 import net.corda.core.transactions.LedgerTransaction
 

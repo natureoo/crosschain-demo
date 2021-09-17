@@ -1,4 +1,4 @@
-package com.template.utils
+package com.template.tool
 
 import org.web3j.utils.Numeric
 import java.security.MessageDigest

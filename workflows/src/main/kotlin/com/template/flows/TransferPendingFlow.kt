@@ -8,7 +8,7 @@ import com.template.metadata.CashMovementStatus
 import com.template.states.CashMovementState
 import com.template.states.PasswordHashState
 import com.template.states.PasswordState
-import com.template.utils.Util
+import com.template.tool.Util
 import com.template.utils.setStep
 import net.corda.core.contracts.Command
 import net.corda.core.flows.*
@@ -69,6 +69,8 @@ object TransferPendingFlow {
                     ?: throw IllegalStateException("Empty notaryIdentities")
             // Stage 1 - Generating Transaction
             setStep(GENERATING_TRANSACTION)
+
+
             val pwd = Util.generatePassword()
             val pwdHash = Util.generateHash(pwd)
             val cashMovementState = CashMovementState(

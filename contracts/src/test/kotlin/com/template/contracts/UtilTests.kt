@@ -1,6 +1,6 @@
 package com.template.contracts
 
-import com.template.utils.Util
+import com.template.tool.Util
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -24,7 +24,7 @@ class UtilTests {
 
     @Test
     fun testGenHash() {
-        val hash = Util.generateHash("0x630a250189011b30f2a325ce1c6450c87a7e21a09e2f37e17ff15c77bdc951bd")
+        val hash = Util.generateHash("0x6d7246adddbf54fb82dcb1aabacaa7a5183b898338aef11a029125ae9f618b29")
         println("hash: $hash")
     }
 

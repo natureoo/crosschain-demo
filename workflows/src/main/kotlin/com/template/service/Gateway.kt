@@ -12,7 +12,7 @@ import com.template.metadata.Role
 import com.template.schema.PasswordSchemaV1
 import com.template.service.eth.HashedTimelockERC20
 import com.template.states.PasswordState
-import com.template.utils.Util
+import com.template.tool.Util
 import net.corda.core.node.AppServiceHub
 import net.corda.core.node.ServiceHub
 import net.corda.core.node.services.CordaService
@@ -69,13 +69,68 @@ class Gateway(val serviceHub: ServiceHub) : SingletonSerializeAsToken() {
 
     private companion object {
         val log = loggerFor<Gateway>()
+
     }
 
 
 
     init {
-        initWeb3j()
+        initWeb3jTest()
+//        initHttpTest()
         log.info("Gateway init")
+    }
+
+//    private fun request() =
+//            Request.Builder().url("https://www.google.com.hk/webhp?hl=zh-CN&sourceid=cnhp&gws_rd=ssl").build()
+
+
+//    fun initHttpTest(){
+//        val client = OkHttpClient()
+//        val response = client.newCall(request()).execute()
+//        println(response)
+//
+//    }
+
+    fun initWeb3jTest() {
+
+        try {
+            val RPC_URL = "https://rinkeby.infura.io/v3/b8a7ec5d22c14bd6b2ffca2352395ed4";
+            val web3j = Quorum.build(HttpService(RPC_URL))
+
+            val contractAddress = "0x5E5A4262Bc1254729EcBa99b6Aa03257a627dd32"
+
+            val aAddress = "0x3761940D8aDd75AC0A2f37670a62A71c905475b5" //A
+
+            val bAddress = "0xD8227ed611b855D74D1D0F60Da995956306c5577" //B
+
+
+            val tokenContract = "0x69b726d0cec2c6d9026473b3e7ce91e71b58e70e"
+
+            val aCredentials = Credentials.create("2d5829a087b9c70d35965ba6357d2269692b6d070df1b941571d9fd1b8b841c4") //B
+
+            val bCredentials = Credentials.create("f279649ae6910401d77acb4e4e204244f93410429a0af02967fc110f4471f6ae") //B
+
+
+            val aHtlcContract = HashedTimelockERC20.load(
+                    contractAddress, web3j, aCredentials, StaticGasProvider(GAS_PRICE, GAS_LIMIT))
+
+            val bHtlcContract = HashedTimelockERC20.load(
+                    contractAddress, web3j, bCredentials, StaticGasProvider(GAS_PRICE, GAS_LIMIT))
+
+
+            //(String _receiver, byte[] _hashlock, BigInteger _timelock, String _tokenContract, BigInteger _amount)
+            //(String _receiver, byte[] _hashlock, BigInteger _timelock, String _tokenContract, BigInteger _amount)
+            val passwordHashBytes = Util.hexToByteArray("0x40e254db30ad0c68cafbefb8bf2bf7fc101b96ff1dcd8182429c36179964aff8")
+
+
+            //corda payer-> corda payee -> eth b -> eth a -> corda payer (locked asset event) -> eth a (password) -> eth b (password) -> corda payee (unlocked event with password)
+            //corda payer-> corda payee -> eth b -> eth a -> corda payer (locked asset event) -> eth a (password) -> eth b (password) -> corda payee (unlocked event with password)
+            val transactionReceipt = bHtlcContract.depositFunds(aAddress, passwordHashBytes, BigInteger.valueOf(600L),
+                    tokenContract, BigInteger("1000000")).send()
+            println(transactionReceipt)
+        }catch(e: Exception){
+            e.printStackTrace()
+        }
     }
 
     fun initWeb3j() {
@@ -98,17 +153,17 @@ class Gateway(val serviceHub: ServiceHub) : SingletonSerializeAsToken() {
         //payer listen locked event
         if(myETHAccount!!.role == Role.PAYER) {
             //Receive locked asset event -> send password to eth
-            val lockedAssetFlowable = myHtlcContract!!.depositFundsEventFlowable(DefaultBlockParameterName.EARLIEST, DefaultBlockParameterName.LATEST);
-            lockedAssetFlowable.subscribe { event ->
-                run {
-                    log.info("lockedAssetFlowable  $event")
-
-                    //get passwordHash from event and get password from PasswordState , then send to eth
-
-                    var passworHash = Util.toHexString(event.hashlock)
-                    sendPassword(passworHash)
-                }
-            }
+//            val lockedAssetFlowable = myHtlcContract!!.depositFundsEventFlowable(DefaultBlockParameterName.EARLIEST, DefaultBlockParameterName.LATEST);
+//            lockedAssetFlowable.subscribe { event ->
+//                run {
+//                    log.info("lockedAssetFlowable  $event")
+//
+//                    //get passwordHash from event and get password from PasswordState , then send to eth
+//
+//                    var passworHash = Util.toHexString(event.hashlock)
+//                    sendPassword(passworHash)
+//                }
+//            }
         }
 
 
