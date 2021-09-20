@@ -5,7 +5,6 @@ package com.template.service
  * @date 4/9/21 上午10:57
  * @email 924943578@qq.com
  */
-import com.template.flows.TransferRequestFlow
 import com.template.metadata.ETHAccount
 import com.template.metadata.PasswordMessage
 import com.template.metadata.Role
@@ -13,7 +12,6 @@ import com.template.schema.PasswordSchemaV1
 import com.template.service.eth.HashedTimelockERC20
 import com.template.states.PasswordState
 import com.template.tool.Util
-import net.corda.core.node.AppServiceHub
 import net.corda.core.node.ServiceHub
 import net.corda.core.node.services.CordaService
 import net.corda.core.node.services.queryBy
@@ -51,7 +49,7 @@ class Gateway(val serviceHub: ServiceHub) : SingletonSerializeAsToken() {
 
     val timeLock = BigInteger.valueOf(3600L) //3600s
 
-    val ethAmount = BigInteger.valueOf(1000L)
+    val ethAmount = BigInteger.valueOf(10L)
 
     //account A
     val payerETHAccount = ETHAccount(Role.PAYER,"0x3761940D8aDd75AC0A2f37670a62A71c905475b5", "0xD8227ed611b855D74D1D0F60Da995956306c5577","2d5829a087b9c70d35965ba6357d2269692b6d070df1b941571d9fd1b8b841c4")
@@ -75,8 +73,9 @@ class Gateway(val serviceHub: ServiceHub) : SingletonSerializeAsToken() {
 
 
     init {
-        initWeb3jTest()
+//        initWeb3jTest()
 //        initHttpTest()
+        initWeb3j()
         log.info("Gateway init")
     }
 
@@ -137,10 +136,19 @@ class Gateway(val serviceHub: ServiceHub) : SingletonSerializeAsToken() {
 
         val web3j = Quorum.build(HttpService(URL))
 
-        if(ourName != null && ourName.contains("payer", true))
+        if(ourName != null && ourName.contains("payer", true)) {
+            log.info("Role: payer")
             myETHAccount = payerETHAccount
-        else
+        }
+        else if(ourName != null && ourName.contains("payee", true)) {
+            log.info("Role: payee")
             myETHAccount = payeeETHAccount
+        }
+        else{
+            log.info("Role: none")
+            return;
+        }
+
 
         log.info("myETHAccount: $myETHAccount")
 
@@ -153,17 +161,20 @@ class Gateway(val serviceHub: ServiceHub) : SingletonSerializeAsToken() {
         //payer listen locked event
         if(myETHAccount!!.role == Role.PAYER) {
             //Receive locked asset event -> send password to eth
-//            val lockedAssetFlowable = myHtlcContract!!.depositFundsEventFlowable(DefaultBlockParameterName.EARLIEST, DefaultBlockParameterName.LATEST);
-//            lockedAssetFlowable.subscribe { event ->
-//                run {
-//                    log.info("lockedAssetFlowable  $event")
-//
-//                    //get passwordHash from event and get password from PasswordState , then send to eth
-//
-//                    var passworHash = Util.toHexString(event.hashlock)
-//                    sendPassword(passworHash)
-//                }
-//            }
+            val lockedAssetFlowable = myHtlcContract!!.depositFundsEventFlowable(DefaultBlockParameterName.EARLIEST, DefaultBlockParameterName.LATEST);
+            lockedAssetFlowable.subscribe { event ->
+                run {
+                    log.info("lockedAssetFlowable:  $event")
+
+                    //get passwordHash from event and get password from PasswordState , then send to eth
+
+                    var passworHash = Util.toHexString(event.hashlock)
+
+                    log.info("lockedAssetFlowable:  $passworHash")
+
+                    sendPassword(passworHash)
+                }
+            }
         }
 
 
@@ -194,8 +205,8 @@ class Gateway(val serviceHub: ServiceHub) : SingletonSerializeAsToken() {
         //send passwordHash
         try {
             val byteArray = Util.hexToByteArray(passwordHashMessage)
-            val transactionReceipt = myHtlcContract!!.depositFunds(payerETHAccount.toAddress, byteArray, timeLock, tokenContract, ethAmount).send()
-            log.info("sendPasswordHash: $transactionReceipt")
+            val transactionReceipt = myHtlcContract!!.depositFunds(myETHAccount!!.toAddress, byteArray, timeLock, tokenContract, ethAmount).send()
+            log.info("sendPasswordHash depositFunds  transactionReceipt: $transactionReceipt")
         }catch(e: Exception){
             log.error(e.toString())
         }
@@ -211,12 +222,18 @@ class Gateway(val serviceHub: ServiceHub) : SingletonSerializeAsToken() {
             )
 
             val passwordState = serviceHub.vaultService.queryBy<PasswordState>(passwordHashRequestIdCriteria.and(passwordHashRequestIdCriteria)).states.single().state.data
+
+            log.info("sendPassword passwordState: $passwordState")
+
             val password = passwordState.password
 
-//        val passwordHash = passwordState.passwordHash
+            log.info("sendPassword password: $password")
 
             //send password
-            myHtlcContract!!.withdrawFunds(Util.hexToByteArray(passwordHash), Util.hexToByteArray(password))
+            val transactionReceipt = myHtlcContract!!.withdrawFunds(Util.hexToByteArray(passwordHash), Util.hexToByteArray(password)).send()
+
+            log.info("sendPassword withdrawFunds  transactionReceipt: $transactionReceipt")
+
         }catch(e: Exception){
             log.error(e.toString())
         }
@@ -225,12 +242,12 @@ class Gateway(val serviceHub: ServiceHub) : SingletonSerializeAsToken() {
     }
 
     fun callTransferRequestFlow(passwordMessage: PasswordMessage){
-        try {
-            val appServiceHub = serviceHub as AppServiceHub
-            appServiceHub.startFlow(TransferRequestFlow.TransferRequest(passwordMessage))
-        }catch(e: Exception){
-            log.error(e.toString())
-        }
+//        try {
+//            val appServiceHub = serviceHub as AppServiceHub
+//            appServiceHub.startFlow(TransferRequestFlow.TransferRequest(passwordMessage))
+//        }catch(e: Exception){
+//            log.error(e.toString())
+//        }
 
     }
 

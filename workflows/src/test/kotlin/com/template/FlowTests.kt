@@ -7,6 +7,7 @@ import com.template.states.CashMovementState
 import com.template.states.PasswordHashState
 import com.template.states.PasswordState
 import net.corda.core.contracts.StateAndRef
+import net.corda.core.identity.CordaX500Name
 import net.corda.core.utilities.getOrThrow
 import net.corda.testing.core.singleIdentity
 import net.corda.testing.node.MockNetwork
@@ -44,8 +45,8 @@ class FlowTests {
                 TestCordapp.findCordapp("com.template.contracts"),
                 TestCordapp.findCordapp("com.template.flows")
         )))
-        payerNode = network.createPartyNode()
-        payeeNode = network.createPartyNode()
+        payerNode = network.createPartyNode(CordaX500Name("AlicePayer", "London", "GB"))
+        payeeNode = network.createPartyNode(CordaX500Name("BobPayee", "London", "GB"))
 
         listOf(payerNode, payeeNode).forEach { it.registerInitiatedFlow(TransferPendingFlow.TransferPendingResponder::class.java)}
         listOf(payerNode, payeeNode).forEach { it.registerInitiatedFlow(TransferRequestFlow.TransferRequestResponder::class.java)}
@@ -70,6 +71,7 @@ class FlowTests {
         passwordState = signedTransaction.tx.outputsOfType<PasswordState>().single()
         cashMovementState = signedTransaction.tx.outputsOfType<CashMovementState>().single()
 
+        Thread.currentThread().join()
     }
 
     @Test

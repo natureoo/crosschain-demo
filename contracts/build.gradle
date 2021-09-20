@@ -23,21 +23,16 @@ sourceCompatibility = 1.8
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     // Corda dependencies.
-    cordaCompile("$corda_core_release_group:corda-core:$corda_core_release_version"){
-//        exclude group: 'org.bouncycastle', module: 'bcprov-jdk15on'
-//        exclude group: 'org.bouncycastle', module: 'bcpkix-jdk15on'
-    }
-    cordaRuntime("$corda_release_group:corda-node-api:$corda_release_version"){
-//        exclude group: 'org.bouncycastle', module: 'bcprov-jdk15on'
-//        exclude group: 'org.bouncycastle', module: 'bcpkix-jdk15on'
-    }
+    cordaCompile "$corda_core_release_group:corda-core:$corda_core_release_version"
+
+    cordaRuntime "$corda_release_group:corda-node-api:$corda_release_version"
+
     testCompile "$corda_release_group:corda-node-driver:$corda_release_version"
 
     compile("org.web3j:core:4.8.5"){
         exclude group: 'org.bouncycastle', module: 'bcprov-jdk15on'
     }
     compile "org.web3j:quorum:4.8.4"
-//    compile "org.bitcoinj:bitcoinj-core:0.14.6"
 }
 
 

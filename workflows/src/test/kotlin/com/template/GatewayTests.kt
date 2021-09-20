@@ -9,7 +9,7 @@ import org.junit.Rule
 import org.junit.Test
 
 class GatewayTests {
-    private val oracleIdentity = TestIdentity(CordaX500Name("Oracle", "New York", "US"))
+    private val oracleIdentity = TestIdentity(CordaX500Name("OraclePayer", "New York", "US"))
     private val dummyServices = MockServices(listOf("com.template.contracts"), oracleIdentity)
     private val gateway = Gateway(dummyServices)
 
@@ -20,7 +20,8 @@ class GatewayTests {
     @Test
     fun `gateway init`() {
 //        gateway.initWeb3j()
-//        Thread.currentThread().join()
+        gateway.sendPasswordHash("0xf972aa9efc9f921e7b44d732471a1cada96523c7e9799a3c80ee249f7f5106d1")
+        Thread.currentThread().join()
     }
 
 
