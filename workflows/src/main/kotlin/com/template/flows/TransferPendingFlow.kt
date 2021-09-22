@@ -110,7 +110,6 @@ object TransferPendingFlow {
                 addOutputState(passwordState, PasswordContract.PASSWORD_CONTRACT_ID)
                 addCommand(cashTransferPendingCmd)
                 addCommand(passwordCreateCmd)
-//                SignatureAttachmentConstraint(ourIdentity.owningKey)
             }
 
             // Stage 2 - Verifying Transaction

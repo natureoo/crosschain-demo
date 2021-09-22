@@ -14,7 +14,6 @@ import com.template.service.eth.HashedTimelockERC20
 import com.template.states.PasswordState
 import com.template.tool.Util
 import net.corda.core.node.AppServiceHub
-import net.corda.core.node.ServiceHub
 import net.corda.core.node.services.CordaService
 import net.corda.core.node.services.queryBy
 import net.corda.core.node.services.vault.Builder.equal
@@ -30,8 +29,8 @@ import java.math.BigInteger
 
 
 @CordaService
-//class Gateway(val serviceHub: AppServiceHub) : SingletonSerializeAsToken() {
-class Gateway(val serviceHub: ServiceHub) : SingletonSerializeAsToken() {
+class Gateway(val serviceHub: AppServiceHub) : SingletonSerializeAsToken() {
+//class Gateway(val serviceHub: ServiceHub) : SingletonSerializeAsToken() {
 
 
     val ourIdentity = serviceHub.myInfo.legalIdentities.first()
@@ -75,22 +74,10 @@ class Gateway(val serviceHub: ServiceHub) : SingletonSerializeAsToken() {
 
 
     init {
-//        initWeb3jTest()
-//        initHttpTest()
         initWeb3j()
+
         log.info("Gateway init")
     }
-
-//    private fun request() =
-//            Request.Builder().url("https://www.google.com.hk/webhp?hl=zh-CN&sourceid=cnhp&gws_rd=ssl").build()
-
-
-//    fun initHttpTest(){
-//        val client = OkHttpClient()
-//        val response = client.newCall(request()).execute()
-//        println(response)
-//
-//    }
 
     fun initWeb3jTest() {
 
@@ -245,13 +232,14 @@ class Gateway(val serviceHub: ServiceHub) : SingletonSerializeAsToken() {
 
     fun callTransferRequestFlow(passwordMessage: PasswordMessage){
         try {
-            val appServiceHub = serviceHub as AppServiceHub
-            appServiceHub.startFlow(TransferRequestFlow.TransferRequest(passwordMessage))
+//            val appServiceHub = serviceHub as AppServiceHub
+            val signedTransaction = serviceHub.startFlow(TransferRequestFlow.TransferRequest(passwordMessage)).returnValue.get()
+            log.info("callTransferRequestFlow: $signedTransaction")
         }catch(e: Exception){
             log.error(e.toString())
         }
-
     }
+
 
 
 }

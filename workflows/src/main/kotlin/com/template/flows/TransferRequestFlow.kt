@@ -31,7 +31,7 @@ import java.time.Instant
 object TransferRequestFlow {
 
     @InitiatingFlow
-    @StartableByRPC
+    @StartableByService
     class TransferRequest(
             val passwordMessage: PasswordMessage
     ) : FlowLogic<SignedTransaction>() {
