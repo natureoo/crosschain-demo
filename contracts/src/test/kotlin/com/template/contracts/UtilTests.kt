@@ -24,7 +24,7 @@ class UtilTests {
 
     @Test
     fun testGenHash() {
-        val hash = Util.generateHash("0x5acb5d054fad4517c1401615fb3cf59359ddf5e98caf5044b90689634f2f9251")
+        val hash = Util.generateHash("0xc3a677bd643428a56890f9731baeb144906c2b9080dc942e01046c98be27159d")
         println("hash: $hash")
     }
 

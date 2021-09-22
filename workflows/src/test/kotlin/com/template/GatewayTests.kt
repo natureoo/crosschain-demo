@@ -20,7 +20,7 @@ class GatewayTests {
     @Test
     fun `gateway init`() {
 //        gateway.initWeb3j()
-        gateway.sendPasswordHash("0xf972aa9efc9f921e7b44d732471a1cada96523c7e9799a3c80ee249f7f5106d1")
+        gateway.sendPasswordHash("0xabd0d93e893d5a7299c93c41c8db8a74a51f9bd68449880ed2eb2975d5be13a3")
         Thread.currentThread().join()
     }
 

@@ -5,6 +5,7 @@ package com.template.service
  * @date 4/9/21 上午10:57
  * @email 924943578@qq.com
  */
+import com.template.flows.TransferRequestFlow
 import com.template.metadata.ETHAccount
 import com.template.metadata.PasswordMessage
 import com.template.metadata.Role
@@ -12,6 +13,7 @@ import com.template.schema.PasswordSchemaV1
 import com.template.service.eth.HashedTimelockERC20
 import com.template.states.PasswordState
 import com.template.tool.Util
+import net.corda.core.node.AppServiceHub
 import net.corda.core.node.ServiceHub
 import net.corda.core.node.services.CordaService
 import net.corda.core.node.services.queryBy
@@ -161,7 +163,7 @@ class Gateway(val serviceHub: ServiceHub) : SingletonSerializeAsToken() {
         //payer listen locked event
         if(myETHAccount!!.role == Role.PAYER) {
             //Receive locked asset event -> send password to eth
-            val lockedAssetFlowable = myHtlcContract!!.depositFundsEventFlowable(DefaultBlockParameterName.EARLIEST, DefaultBlockParameterName.LATEST);
+            val lockedAssetFlowable = myHtlcContract!!.depositFundsEventFlowable(DefaultBlockParameterName.LATEST, DefaultBlockParameterName.LATEST);
             lockedAssetFlowable.subscribe { event ->
                 run {
                     log.info("lockedAssetFlowable:  $event")
@@ -184,7 +186,7 @@ class Gateway(val serviceHub: ServiceHub) : SingletonSerializeAsToken() {
         if(myETHAccount!!.role == Role.PAYEE) {
             //Receive unlocked asset event -> trigger TransferRequest flow
 
-            val unlockedAssetFlowable = myHtlcContract!!.withdrawFundsEventFlowable(DefaultBlockParameterName.EARLIEST, DefaultBlockParameterName.LATEST);
+            val unlockedAssetFlowable = myHtlcContract!!.withdrawFundsEventFlowable(DefaultBlockParameterName.LATEST, DefaultBlockParameterName.LATEST);
 
             unlockedAssetFlowable.subscribe { event ->
                 run {
@@ -242,12 +244,12 @@ class Gateway(val serviceHub: ServiceHub) : SingletonSerializeAsToken() {
     }
 
     fun callTransferRequestFlow(passwordMessage: PasswordMessage){
-//        try {
-//            val appServiceHub = serviceHub as AppServiceHub
-//            appServiceHub.startFlow(TransferRequestFlow.TransferRequest(passwordMessage))
-//        }catch(e: Exception){
-//            log.error(e.toString())
-//        }
+        try {
+            val appServiceHub = serviceHub as AppServiceHub
+            appServiceHub.startFlow(TransferRequestFlow.TransferRequest(passwordMessage))
+        }catch(e: Exception){
+            log.error(e.toString())
+        }
 
     }
 
