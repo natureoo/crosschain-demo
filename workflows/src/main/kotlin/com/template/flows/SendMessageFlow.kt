@@ -13,8 +13,8 @@ import net.corda.core.utilities.unwrap
  */
 @InitiatingFlow
 //class SendMessageFlow(val targetParty: Party, val passwordHashMessage: PasswordHashMessage) : FlowLogic<PasswordHashMessage>() {
-class SendMessageFlow(val targetParty: Party, val passwordHashMessage: String) : FlowLogic<String>() {
+class SendMessageFlow(val targetParty: Party, val message: String) : FlowLogic<String>() {
     @Suspendable
 //    override fun call() = initiateFlow(targetParty).sendAndReceive<PasswordHashMessage>(passwordHashMessage).unwrap { it }
-    override fun call() = initiateFlow(targetParty).sendAndReceive<String>(passwordHashMessage).unwrap { it }
+    override fun call() = initiateFlow(targetParty).sendAndReceive<String>(message).unwrap { it }
 }

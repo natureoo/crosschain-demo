@@ -28,12 +28,13 @@ class ReceiveMessageHandler(val session: FlowSession) : FlowLogic<Unit>() {
     override fun call() {
         progressTracker.currentStep = RECEIVING
 //        val message = session.receive<PasswordHashMessage>().unwrap { it }
-        val passwordHash = session.receive<String>().unwrap { it }
-
+        val message = session.receive<String>().unwrap { it }
+        val passwordHash = message.split(" ")[0]
+        val instructedMVUnit = message.split(" ")[1].toBigInteger()
         progressTracker.currentStep = CALCULATING
         val response = try {
             // Get the nth prime from the oracle.
-            serviceHub.cordaService(Gateway::class.java).sendPasswordHash(passwordHash)
+            serviceHub.cordaService(Gateway::class.java).sendPasswordHash(passwordHash, instructedMVUnit)
         } catch (e: Exception) {
             // Re-throw the exception as a FlowException so its propagated to the querying node.
             throw FlowException(e)

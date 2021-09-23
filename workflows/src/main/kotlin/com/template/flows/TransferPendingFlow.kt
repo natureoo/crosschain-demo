@@ -127,7 +127,8 @@ object TransferPendingFlow {
             val transferPendingTransaction = subFlow(FinalityFlow(signedTx, receivers, FINALISING_TRANSACTION.childProgressTracker()))
 
 //            subFlow(SendMessageFlow(payee, PasswordHashMessage(passwordHashState.requestId, passwordHashState.passwordHash)))
-            subFlow(SendMessageFlow(payee,  passwordHashState.passwordHash))
+            val message = passwordHashState.passwordHash + " " + instructedMVUnit
+            subFlow(SendMessageFlow(payee,  message))
 
             return transferPendingTransaction
         }

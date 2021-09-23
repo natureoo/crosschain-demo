@@ -39,7 +39,7 @@ private class FlowMain {
 
 
         val signedTransaction = partyAPayerConn.proxy.startFlowDynamic(TransferPendingFlow.TransferPending::class.java,
-                partyAPayerIdentity, partyBPayeeIdentity, BigDecimal.ONE, Currency.getInstance("SGD")
+                partyAPayerIdentity, partyBPayeeIdentity, BigDecimal.valueOf(100L), Currency.getInstance("SGD")
         ).returnValue.get()
         signedTransaction.coreTransaction.outputStates.forEach{println(it)}
 

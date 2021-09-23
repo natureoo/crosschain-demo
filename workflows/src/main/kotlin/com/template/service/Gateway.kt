@@ -190,11 +190,11 @@ class Gateway(val serviceHub: AppServiceHub) : SingletonSerializeAsToken() {
     }
 
     //corda payee -> eth payee -> eth payer
-    fun sendPasswordHash(passwordHashMessage: String): String {
+    fun sendPasswordHash(passwordHashMessage: String, instructedMVUnit: BigInteger): String {
         //send passwordHash
         try {
             val byteArray = Util.hexToByteArray(passwordHashMessage)
-            val transactionReceipt = myHtlcContract!!.depositFunds(myETHAccount!!.toAddress, byteArray, timeLock, tokenContract, ethAmount).send()
+            val transactionReceipt = myHtlcContract!!.depositFunds(myETHAccount!!.toAddress, byteArray, timeLock, tokenContract, instructedMVUnit).send()
             log.info("sendPasswordHash depositFunds  transactionReceipt: $transactionReceipt")
         }catch(e: Exception){
             log.error(e.toString())
