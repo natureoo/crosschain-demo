@@ -20,6 +20,10 @@ cordapp {
 
 sourceCompatibility = 1.8
 
+//configurations.all {
+//    exclude group: 'org.bouncycastle', module: 'bcprov-jdk15on'
+//}
+
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     // Corda dependencies.
